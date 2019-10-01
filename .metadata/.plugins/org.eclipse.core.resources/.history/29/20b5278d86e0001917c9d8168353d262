@@ -1,0 +1,13 @@
+package cmsc433;
+
+public class Order {
+
+	public int orderNumber;
+	public String customerName;
+	
+	public Order(int orderNumber, String customerName) {
+		this.orderNumber = orderNumber;
+		this.customerName = customerName;
+	}
+	
+}

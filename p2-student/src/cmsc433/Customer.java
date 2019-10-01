@@ -14,8 +14,10 @@ public class Customer implements Runnable {
 	private final String name;
 	private final List<Food> order;
 	private final int orderNum;    
-	
+
 	private static int runningCounter = 0;
+	
+	private Order o;
 
 	/**
 	 * You can feel free modify this constructor.  It must take at
@@ -26,6 +28,8 @@ public class Customer implements Runnable {
 		this.name = name;
 		this.order = order;
 		this.orderNum = ++runningCounter;
+		
+		this.o = new Order(++Simulation.numOrders,this.name,this.order);
 	}
 
 	public String toString() {
@@ -40,7 +44,39 @@ public class Customer implements Runnable {
 	 */
 	public void run() {
 		//YOUR CODE GOES HERE...
+
+		Simulation.logEvent(SimulationEvent.customerStarting(this));
 		
-		
+		try {
+			Simulation.sem.acquire();
+
+			//enter ratsie's
+			Simulation.logEvent(SimulationEvent.customerEnteredRatsies(this));
+
+			//place order
+			synchronized(Simulation.orders) {
+				Simulation.logEvent(SimulationEvent.customerPlacedOrder(this, order, orderNum));
+				Simulation.orders.add(o);
+				Simulation.orders.notifyAll();
+			}
+			
+			//receive order TODO
+			synchronized(o) {
+				while(!Simulation.completed.contains(o)) {
+					o.wait();
+				}
+				Simulation.logEvent(SimulationEvent.customerReceivedOrder(this, order, o.orderNumber));
+			}
+			
+			//leave
+			Simulation.logEvent(SimulationEvent.customerLeavingRatsies(this));
+
+		} catch (InterruptedException e) {
+			//Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			Simulation.sem.release();
+		}
+
 	}
 }

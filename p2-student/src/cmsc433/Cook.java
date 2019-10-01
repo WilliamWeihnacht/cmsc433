@@ -1,6 +1,5 @@
 package cmsc433;
 
-
 /**
  * Cooks are simulation actors that have at least one field, a name.
  * When running, a cook attempts to retrieve outstanding orders placed
@@ -42,8 +41,59 @@ public class Cook implements Runnable {
 		try {
 			while(true) {
 				//YOUR CODE GOES HERE...
-				throw new InterruptedException(); // REMOVE THIS
+
+				//remove order from order queue
+				Order order;
+				synchronized(Simulation.orders) {
+					while (Simulation.orders.isEmpty()) {
+						Simulation.orders.wait();
+					}
+					
+					order = Simulation.orders.remove(0);
+					Simulation.logEvent(SimulationEvent.cookReceivedOrder(this, order.order, order.orderNumber));
+				}
+				
+
+				//place each item in order into appropriate machine
+				if (order != null) {
+					
+					Thread[] machines = new Thread[order.order.size()];
+					int i = 0;
+					
+					for (Food item : order.order) {
+						
+						//call make food
+						Simulation.logEvent(SimulationEvent.cookStartedFood(this, item, order.orderNumber));
+
+						if (item.equals(FoodType.wings)) {
+							machines[i] = Simulation.fryer.makeFood();
+						} else if (item.equals(FoodType.pizza)) {
+							machines[i] = Simulation.oven.makeFood();
+						} else if (item.equals(FoodType.sub)) {
+							machines[i] = Simulation.grillPress.makeFood();
+						} else if (item.equals(FoodType.soda)) {
+							machines[i] = Simulation.fountain.makeFood();
+						}
+						
+						i++;
+
+					}
+					
+					for (int j = 0; j < i; j++) {
+						machines[j].join();
+						Simulation.logEvent(SimulationEvent.cookFinishedFood(this, order.order.get(j), order.orderNumber));
+					}
+					
+					
+					//once food is done notify customer
+					synchronized(order) {
+						Simulation.completed.add(order);
+						order.notify();
+						Simulation.logEvent(SimulationEvent.cookCompletedOrder(this, order.orderNumber));
+					}
+				}
 			}
+
 		}
 		catch(InterruptedException e) {
 			// This code assumes the provided code in the Simulation class

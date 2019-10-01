@@ -2,27 +2,27 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="" key="selection"/>
+		<item value="numTables" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="numTables"/>
+			<item value="sem"/>
+			<item value="wait"/>
+			<item value="cook finished"/>
+			<item value="cooks"/>
+			<item value="cooks.start"/>
+			<item value="Semaphore"/>
+			<item value="cook"/>
+			<item value="order"/>
+			<item value="machine"/>
 			<item value="print"/>
 			<item value="highestBids.put"/>
 			<item value="itemsPerBuyer"/>
 			<item value="itemsPer"/>
 			<item value="itemsUpForBidding.re"/>
-			<item value="itemsUpForBidding"/>
-			<item value="itemsSold"/>
-			<item value="for ("/>
-			<item value="for"/>
-			<item value="submitItem"/>
-			<item value="itemsUp"/>
-			<item value="itemPrice"/>
-			<item value="status"/>
-			<item value="itemsUpForBidding.get"/>
-			<item value="pay"/>
 		</list>
 		<list key="replacehistory">
 		</list>
@@ -31,7 +31,7 @@
 		<item value="290" key="DIALOG_WIDTH"/>
 		<item value="1|.AppleSystemUIFont|11.0|0|COCOA|1|.AppleSystemUIFont" key="DIALOG_FONT_NAME"/>
 		<item value="409" key="DIALOG_HEIGHT"/>
-		<item value="633" key="DIALOG_X_ORIGIN"/>
-		<item value="296" key="DIALOG_Y_ORIGIN"/>
+		<item value="915" key="DIALOG_X_ORIGIN"/>
+		<item value="160" key="DIALOG_Y_ORIGIN"/>
 	</section>
 </section>

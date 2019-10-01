@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
+
+import cmsc433.Machine.MachineType;
 
 /**
  * Simulation is the main class used to run the simulation.  You may
@@ -12,7 +15,30 @@ import java.util.Random;
  */
 public class Simulation {
 	// List to track simulation events during simulation
-	public static List<SimulationEvent> events;  
+	public static List<SimulationEvent> events;
+
+	//track open tables
+	public static volatile Semaphore sem;
+
+	//track number of orders
+	public static volatile int numOrders = 0;
+
+	//track orders
+	public static List<Order> orders;
+	
+	public static List<Order> completed = new ArrayList<Order>();
+
+	//lock for orders
+	public static final Object orderLock = new Object();
+
+	//lock to wait for food
+	public static final Object reciveOrderLock = new Object();
+
+	//declare machines
+	public static Machine fryer;
+	public static Machine oven;
+	public static Machine grillPress;
+	public static Machine fountain;
 
 	/**
 	 * Used by other classes in the simulation to log events
@@ -54,9 +80,6 @@ public class Simulation {
 		// allowed to be used.
 		events = Collections.synchronizedList(new ArrayList<SimulationEvent>());
 
-
-
-
 		// Start the simulation
 		logEvent(SimulationEvent.startSimulation(numCustomers,
 				numCooks,
@@ -66,11 +89,23 @@ public class Simulation {
 
 
 		// Set things up you might need
-
+		//tables = numTables;
+		sem = new Semaphore(numTables,true);
+		
+		orders = new ArrayList<Order>();
 
 		// Start up machines
+		fryer = new Machine(MachineType.fryer,FoodType.wings,machineCapacity);
+		logEvent(SimulationEvent.machineStarting(fryer, fryer.machineFoodType, fryer.capacity));
 
+		oven = new Machine(MachineType.oven,FoodType.pizza,machineCapacity);
+		logEvent(SimulationEvent.machineStarting(oven, oven.machineFoodType, oven.capacity));
 
+		grillPress = new Machine(MachineType.grillPress,FoodType.sub,machineCapacity);
+		logEvent(SimulationEvent.machineStarting(grillPress, grillPress.machineFoodType, grillPress.capacity));
+
+		fountain = new Machine(MachineType.fountain,FoodType.soda,machineCapacity);
+		logEvent(SimulationEvent.machineStarting(fountain, fountain.machineFoodType, fountain.capacity));
 
 		// Let cooks in
 		Thread[] cooks = new Thread[numCooks];
@@ -112,10 +147,9 @@ public class Simulation {
 				}
 				customers[i] = new Thread(
 						new Customer("Customer " + (i+1), order)
-				);
+						);
 			}
 		}
-
 
 		// Now "let the customers know the shop is open" by
 		//    starting them running in their own thread.
@@ -128,15 +162,24 @@ public class Simulation {
 			//      table...
 		}
 
-
 		try {
 			// Wait for customers to finish
 			//   -- you need to add some code here...
 			
+			//build cooks
+			for(int i = 0; i < cooks.length; i++) {
+				cooks[i] = new Thread(new Cook("Cook " + i));
+			}
 			
-			
-			
-			
+			//TODO?
+			for(int i = 0; i < cooks.length; i++) {
+				cooks[i].start();
+			}
+
+			//Join customers
+			for (int i = 0; i < customers.length; i++) {
+				customers[i].join();
+			}
 
 			// Then send cooks home...
 			// The easiest way to do this might be the following, where
@@ -152,11 +195,11 @@ public class Simulation {
 			System.out.println("Simulation thread interrupted.");
 		}
 
-		// Shut down machines
-
-
-
-
+		// Shut down machines TODO add something else?
+		logEvent(SimulationEvent.machineEnding(fryer));
+		logEvent(SimulationEvent.machineEnding(oven));
+		logEvent(SimulationEvent.machineEnding(grillPress));
+		logEvent(SimulationEvent.machineEnding(fountain));
 
 		// Done with simulation		
 		logEvent(SimulationEvent.endSimulation());
@@ -186,11 +229,11 @@ public class Simulation {
 		int machineCapacity = new Integer(args[3]).intValue();
 		boolean randomOrders = new Boolean(args[4]);
 		 */
-		int numCustomers = 10;
+		int numCustomers = 1;
 		int numCooks =1;
-		int numTables = 5;
+		int numTables = 1;
 		int machineCapacity = 4;
-		boolean randomOrders = false;
+		boolean randomOrders = true;
 
 
 		// Run the simulation and then 
